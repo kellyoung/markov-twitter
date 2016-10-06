@@ -3,6 +3,11 @@ import sys
 from random import choice
 import twitter
 
+api = twitter.Api(
+    consumer_key=os.environ['TWITTER_CONSUMER_KEY'],
+    consumer_secret=os.environ['TWITTER_CONSUMER_SECRET'],
+    access_token_key=os.environ['TWITTER_ACCESS_TOKEN_KEY'],
+    access_token_secret=os.environ['TWITTER_ACCESS_TOKEN_SECRET'])
 
 def open_and_read_file(filenames):
     """Given a list of files, open them, read the text, and return one long
@@ -56,14 +61,41 @@ def make_text(chains):
         words.append(word)
         key = (key[1], word)
 
-    return " ".join(words)
+        # random_text = " ".join(words)[:140]
+        # random_text_truncate = random_text[:140]
+
+    return " ".join(words)[:140]
 
 
 def tweet(chains):
     # Use Python os.environ to get at environmental variables
     # Note: you must run `source secrets.sh` before running this file
     # to make sure these environmental variables are set.
-    pass
+
+    # tweet
+    # ask user if they want to tweet again
+    # if they press enter, tweet again
+    # if they press q, exit the loop
+    # if they press some other key, send error msg and return to asking if they want to tweet again
+    
+    tweet_content = make_text(chains)
+    status = api.PostUpdate(tweet_content)
+    print status.text
+    
+    while True:
+        user_input = raw_input("Enter to tweet again [q to quit] > ")
+        if not user_input:
+            tweet_content = make_text(chains)
+            status = api.PostUpdate(tweet_content)
+            print status.text
+        elif user_input == "q":
+            return
+        else:
+            print "Please enter a valid command."
+
+    # while the user presses enter (which means not user_input), need to make a random tweet
+    # we need to call make_text(chains)
+    # then tweet with api.PostUpdate()
 
 # Get the filenames from the user through a command line prompt, ex:
 # python markov.py green-eggs.txt shakespeare.txt
@@ -76,4 +108,4 @@ text = open_and_read_file(filenames)
 chains = make_chains(text)
 
 # Your task is to write a new function tweet, that will take chains as input
-# tweet(chains)
+tweet(chains)
